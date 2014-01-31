@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="CE-3.4.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+
+	<spring:beans>
+		<spring:bean id="custBean" class="com.pinnacol.singletondemo.Customer" scope="singleton">
+			<spring:property name="message" value="Initial Value"></spring:property>
+		</spring:bean>
+		
+		<spring:bean id="singletonDemo" class="com.pinnacol.singletondemo.SingletonDemoCallable">	
+		</spring:bean>
+		
+		<spring:bean id="secondFlowBean" class="com.pinnacol.singletondemo.SecondFlowCallable">
+		</spring:bean>
+		
+		<spring:bean id="personService" class="com.pinnacol.prototypedemo.PersonService" scope="prototype">
+			<spring:property name="name" value="zed" />
+		</spring:bean>
+		
+		<spring:bean id="protoDemoCallable" class="com.pinnacol.prototypedemo.PrototypeDemoCallable"></spring:bean>
+		
+		<spring:bean id="secondFlowProtoCallable" class="com.pinnacol.prototypedemo.SecondFlowProtoCallable"></spring:bean>
+		
+		 <spring:import resource="classpath:spring-beans.xml"/>
+	</spring:beans>
+
+    <flow name="mulesingletondemoFlow1" doc:name="mulesingletondemoFlow1">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="singletondemo" doc:name="HTTP"/>
+        <component doc:name="Java">
+        	<spring-object bean="singletonDemo" />
+        </component>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="show.cutomer.vm" doc:name="VM"/>
+    </flow>
+    <flow name="mulesingletondemoFlow2" doc:name="mulesingletondemoFlow2">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="show.cutomer.vm" doc:name="VM"/>
+        <component doc:name="Second Flow Java Component">
+        	<spring-object bean="secondFlowBean" />
+        </component>
+        
+    </flow>
+    <flow name="prototypedemo" doc:name="prototypedemo">
+        <http:inbound-endpoint exchange-pattern="request-response" host="localhost" port="8081" path="prototypedemo" doc:name="HTTP"/>
+        <component doc:name="Java">
+        	<spring-object bean="protoDemoCallable" />
+        </component>
+        <vm:outbound-endpoint exchange-pattern="request-response" path="second.proto.vm" doc:name="VM"/>
+    </flow>
+    <flow name="prototypedemoflow2" doc:name="prototypedemoflow2">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="second.proto.vm" doc:name="VM"/>
+    	
+    	<component doc:name="Java">
+    			<spring-object  bean="secondFlowProtoCallable" />
+    	</component>    
+        
+    </flow>
+    
+</mule>
